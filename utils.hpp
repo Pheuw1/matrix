@@ -1,6 +1,15 @@
 #ifndef UTILS_H
 #define UTILS_H
+#include <complex>
+#include <sstream>
 
+template < typename... Args >
+std::string sstr( Args &&... args )
+{
+    std::ostringstream sstr;
+    ( sstr << std::dec << ... << args );
+    return sstr.str();
+}
 namespace ft
 {
     //misc
@@ -140,6 +149,20 @@ namespace ft
 			return (lhs < rhs);
 		}
 	};
+
+    template <typename T>
+    bool operator> (const std::complex<T> & lhs, const std::complex<T> &rhs) {
+        return (lhs.real() > rhs.real()) || (lhs.real() == rhs.real() && lhs.imag() > rhs.imag());
+    }
+
+    template <class It>
+    void reverse(It first, It last) {
+        while ((first != last) && (first != --last)) {
+            ft::swap(*first, *last);
+            ++first;
+        }
+    }
+
 
 }
 

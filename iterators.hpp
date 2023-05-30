@@ -184,7 +184,6 @@ namespace ft
         return it;
       }
 
-
       reference operator*() const {return *(--iterator_type(it));}
 
       pointer operator->() const {return &(this->operator*());}

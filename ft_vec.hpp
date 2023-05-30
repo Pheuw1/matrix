@@ -5,18 +5,14 @@
 #include <memory>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
+#include <bits/c++allocator.h>
 
 namespace ft
 {
 	template < class T, typename Alloc = std::allocator<T> > 
 	class vector
 	{ 
-        // alloc	-	allocator to use for all memory allocations of this container
-        // count	-	the _size of the container
-        // value	-	the value to initialize elements of the container with
-        // first, last	-	the range to copy the elements from
-        // other	-	another container to be used as source to initialize the elements of the container with
-        // init	-	initializer list to initialize the elements of the container with
     public:
         typedef T                                           value_type;
         typedef Alloc                                       allocator_type;
@@ -39,9 +35,15 @@ namespace ft
     public:
         //member functions
         // vector():arr(NULL),_size(0), alloc(Alloc()), _capacity(0) {;}
-        
         explicit vector(const Alloc& alloc = Alloc()):arr(NULL),_size(0), alloc(alloc), _capacity(0) {;}
-        
+		explicit vector(std::initializer_list<T> init, const allocator_type& alloc = Alloc()):arr(NULL),_size(init.size()), alloc(alloc), _capacity(init.size()) {\
+			arr = this->alloc.allocate(init.size());
+			int i = 0;
+			for (auto it = init.begin(); it != init.end(); it++)
+				this->alloc.construct(arr + i++, *it);
+		}
+
+
         template<class InputIt>
         vector(InputIt first, InputIt last, const allocator_type& alloc = Alloc(),
         typename enable_if<!is_integral<InputIt>::value, bool>::type is = 0)
@@ -81,7 +83,60 @@ namespace ft
 		// 		alloc.deallocate(arr, _capacity);
         // }
 
-        vector& operator=( const vector& other ) {
+		vector& operator+=(const vector& other) {
+			if (other._size > _capacity)
+				reserve(other._size);
+			for (size_type i = 0; i < other._size; i++)
+				arr[i] += other.arr[i];
+			return (*this);
+		}
+		
+		vector& operator-=(const vector& other) {
+			if (other._size > _capacity)
+				reserve(other._size);
+			for (size_type i = 0; i < other._size; i++)
+				arr[i] -= other.arr[i];
+			return (*this);
+		}
+
+		vector& operator*=(const T& val) {
+			for (size_type i = 0; i < _size; i++)
+				arr[i] *= val;
+			return (*this);
+		}
+		
+		vector& operator/=(const T& val) {
+			for (size_type i = 0; i < _size; i++)
+				arr[i] /= val;
+			return (*this);
+		}
+		
+		friend T dot(const vector& a, const vector& b) {
+			if (a._size != b._size)
+				throw std::length_error("vector dot: vectors are not the same size");
+			T res = 0;
+			for (size_type i = 0; i < a._size; i++)
+				res += a.arr[i] * b.arr[i];
+			return (res);
+		}
+
+		friend vector cross(const vector& a, const vector& b) {
+			if (a._size != b._size)
+				throw std::length_error("vector cross: vectors are not the same size");
+			if (a._size != 3 && a._size != 2)
+				throw std::length_error("vector cross: only vectors 2D and 3D vectors supported");
+			else if (a._size == 2) {
+				return vector({a.arr[0] * b.arr[1] - a.arr[1] * b.arr[0]});
+			}
+			else if (a._size == 3) {
+				return (vector({a.arr[1] * b.arr[2] - a.arr[2] * b.arr[1],
+							 	a.arr[2] * b.arr[0] - a.arr[0] * b.arr[2],
+								a.arr[0] * b.arr[1] - a.arr[1] * b.arr[0]}));
+			} 	
+			return 0;
+		}
+
+		vector& operator=( const vector& other ) {
             clear();
             alloc.deallocate(arr, _capacity);
             alloc = other.alloc; _capacity = other._capacity;  _size = other._size;
@@ -190,6 +245,7 @@ namespace ft
 				alloc.construct(arr + _size++, val);
 		}
 
+
 		iterator insert (iterator position, const value_type &val) {
 			size_t gap = ft::distance(begin(), position);
 			if (_size + 1 >= _capacity)
@@ -220,6 +276,7 @@ namespace ft
 			_size += n;
 		}
 
+	
 
 		template <class InputIterator>
   		void insert (iterator position, InputIterator first, InputIterator last,
@@ -249,7 +306,6 @@ namespace ft
 			return iterator(arr + beg);
 		}			
 		
-		
 		void push_back (const value_type& val) {
 				if (_size == _capacity) {
 					pointer _tmp = arr;
@@ -270,8 +326,6 @@ namespace ft
 				_size--;
 			}
         }
-
-
 
 		void swap (vector& x) {
 			ft::swap(arr, x.arr);
@@ -308,12 +362,128 @@ namespace ft
                     const vector<T,Alloc>& rhs ) {
             return (lhs == rhs || lhs > rhs);
         }
-    };
+
+
+
+		vector operator+(const vector &v) const {
+			vector res;
+			if (v.size() != _size)
+				throw std::exception();
+			for (size_t i = 0; i < _size; i++)
+				res.push_back(arr[i] + v[i]);
+			return res;
+		}
+
+		// friend vector operator +(const vector &rhs, const vector &lhs) {
+		// 	vector res;
+		// 	if (rhs.size() != lhs.size())
+		// 		throw std::exception();
+		// 	for (size_t i = 0; i < rhs.size(); i++)
+		// 		res.push_back(rhs[i] + lhs[i]);
+		// 	return res;
+		// }
+
+		vector operator-(const vector &v) const {
+			vector res(*this);
+			res -= v;
+			return res;
+		}
+
+		vector operator-()  {
+			for (size_t i = 0; i < _size; i++)
+				arr[i] = -arr[i];
+			return *this;
+		}
+		// friend vector operator -(const vector &rhs, const vector &lhs) {
+		// 	vector res;
+		// 	if (rhs.size() != lhs.size())
+		// 		throw std::exception();
+		// 	for (size_t i = 0; i < rhs.size(); i++)
+		// 		res.push_back(rhs[i] - lhs[i]);
+		// 	return res;
+		// }
+
+
+		vector operator*(const T &v) const {
+			vector res(*this);
+			res *= v;
+			return res;
+		}
+
+		vector operator*(const T &v)  {
+		*this *= v;
+		return *this;
+		}
+
+		vector operator/(const T &v)  {
+		*this /= v;
+		return *this;
+		}
+		// friend vector operator *(const vector &rhs, const T &lhs) {
+		// 	vector res(rhs);
+		// 	res *= lhs;
+		// 	return res;
+		// }
+
+
+		friend double norm(const vector& a) {
+			double res = 0;
+			for (size_type i = 0; i < a._size; i++)
+				res += fabs(a.arr[i] * a.arr[i]);
+			return (sqrt(res));
+		}
+
+		friend double norm_1(const vector& a) {
+			double res = 0;
+			for (size_type i = 0; i < a._size; i++)
+				res += fabs(a.arr[i]);
+			return (res);
+		}
+
+		friend double norm_inf(const vector& a) {
+			double res = 0;
+			for (size_type i = 0; i < a._size; i++)
+				res = max(res, fabs(a.arr[i]));
+			return (res);
+		}
+
+		friend double angle_cos(const vector& a, const vector& b) {
+			return fabs(dot(a, b)) / (norm(a) * norm(b));
+		}
+	
+		friend vector linear_interpolation(const vector &a, const vector &b, T t) {
+			return a + (b - a) * t;
+		}
+
+	};
     
     template< class T, class Alloc >
     void swap(vector<T,Alloc>& lhs, vector<T,Alloc>& rhs) {
         lhs.swap(rhs);
     }
+
+    template< class T, class Alloc >
+	std::ostream &operator<<(std::ostream &out, const vector<T,Alloc> &v) {
+		std::cout << "[ ";
+		for (size_t i = 0; i < v.size() - 1; i++)
+			out << v[i] << ", ";
+		if (v.size())
+			out << v[v.size() - 1];
+		std::cout << "]";
+		return out;
+	}
+
+
+	template<class T>
+	ft::vector<T> linear_combination(ft::vector<ft::vector<T>> v, ft::vector<T> a)  {
+		ft::vector<T> res(v[0].size(), 0);
+		if (v.size() != a.size())
+			throw std::invalid_argument("vectors must be of same size");
+		for	(int i = 0; i < (int)v.size(); i++) {
+			res += v[i] * a[i];
+		}
+		return res;
+	}
 
 
 }
