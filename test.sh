@@ -10,7 +10,7 @@ if [ $# -eq 1 ]; then
 
     else
         echo "Running ex$(printf "%02d" $1).cpp ..."
-        g++ -o  tests/ex$(printf "%02d" $1) tests/ex$(printf "%02d" $1).cpp -I./
+        g++ -std=c++17 -o  tests/ex$(printf "%02d" $1) tests/ex$(printf "%02d" $1).cpp -I./ 
         ./tests/ex$(printf "%02d" $1)
         rm tests/ex$(printf "%02d" $1)
     fi
@@ -26,7 +26,7 @@ else
             make clean
         else
             echo "Running $f.cpp ..."
-            g++ -o  $f $f.cpp -I./
+            g++ -std=c++17 -o  $f $f.cpp -I./ 
         fi
 
 

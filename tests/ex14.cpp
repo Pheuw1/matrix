@@ -251,10 +251,6 @@ int main() {
         // clear the buffer
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // black background
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
-
         matrix<float> model = rotate(vector<float>{1.0, 1.0, 1.0},(float) glfwGetTime()*0.001);
         
         mvp *= model;

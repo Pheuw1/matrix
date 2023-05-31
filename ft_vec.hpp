@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <iostream>
 #include <cmath>
-#include <bits/c++allocator.h>
-
+// inlcude what i need to use initializer list
+#include <initializer_list>
 namespace ft
 {
 	template < class T, typename Alloc = std::allocator<T> > 
@@ -33,7 +33,7 @@ namespace ft
        	size_type _capacity;
 
     public:
-        //member functions
+        //member functions`
         // vector():arr(NULL),_size(0), alloc(Alloc()), _capacity(0) {;}
         explicit vector(const Alloc& alloc = Alloc()):arr(NULL),_size(0), alloc(alloc), _capacity(0) {;}
 		explicit vector(std::initializer_list<T> init, const allocator_type& alloc = Alloc()):arr(NULL),_size(init.size()), alloc(alloc), _capacity(init.size()) {\
@@ -475,7 +475,7 @@ namespace ft
 
 
 	template<class T>
-	ft::vector<T> linear_combination(ft::vector<ft::vector<T>> v, ft::vector<T> a)  {
+	ft::vector<T> linear_combination(ft::vector<ft::vector<T> > v, ft::vector<T> a)  {
 		ft::vector<T> res(v[0].size(), 0);
 		if (v.size() != a.size())
 			throw std::invalid_argument("vectors must be of same size");

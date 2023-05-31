@@ -7,7 +7,7 @@ template < typename... Args >
 std::string sstr( Args &&... args )
 {
     std::ostringstream sstr;
-    ( sstr << std::dec << ... << args );
+    ( (sstr << std::dec) << ... << args );
     return sstr.str();
 }
 namespace ft

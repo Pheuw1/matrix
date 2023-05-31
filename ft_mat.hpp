@@ -604,7 +604,7 @@ matrix row_echelon() {
     matrix<float> rotate(vector<float> axis, float theta) {
         axis = axis / norm(axis);
         return matrix<float>({
-               {cosf(theta) + axis[0] * axis[0] * (1 - cosf(theta)), axis[0] * axis[1] * (1 - cosf(theta)) + axis[2] * sinf(theta), axis[0] * axis[2] * (1 - cosf(theta)) - axis[1] * sinf(theta), 0},
+                {cosf(theta) + axis[0] * axis[0] * (1 - cosf(theta)), axis[0] * axis[1] * (1 - cosf(theta)) + axis[2] * sinf(theta), axis[0] * axis[2] * (1 - cosf(theta)) - axis[1] * sinf(theta), 0},
                 {axis[1] * axis[0] * (1 - cosf(theta)) - axis[2] * sinf(theta), cosf(theta) + axis[1] * axis[1] * (1 - cosf(theta)), axis[1] * axis[2] * (1 - cosf(theta)) + axis[0] * sinf(theta), 0},
                 {axis[2] * axis[0] * (1 - cosf(theta)) + axis[1] * sinf(theta), axis[2] * axis[1] * (1 - cosf(theta)) - axis[0] * sinf(theta), cosf(theta) + axis[2] * axis[2] * (1 - cosf(theta)), 0},
                 {0, 0, 0, 1}
