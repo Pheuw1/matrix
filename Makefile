@@ -32,6 +32,7 @@ re: clean all
 
 clean:
 	rm -f $(OBJ) $(DEP) $(EXEC)
+	rm tests/*.o
 
 
 

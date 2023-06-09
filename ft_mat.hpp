@@ -172,6 +172,7 @@ namespace ft
     public:
 
 
+
     matrix(size_type n, size_type m, const value_type &val = value_type()) : mat(n, vector<T>(m, val)), m(m), n(n) {if (n == 0 && m > 0)this->n = 1;}
     matrix(size_type n) : mat(n, vector<T>(n, value_type())) , m(n), n(n) {
         for (size_type i = 0; i < n; i++)
@@ -219,21 +220,24 @@ namespace ft
 
 
     matrix& operator*=(const matrix& other) {
-        if (other.m != n)
+        if (other.n != m) {
             throw std::invalid_argument("Matrix multiplication error: Invalid dimensions");
-        matrix result(other.n, m);
-        for (size_type i = 0; i < other.n; i++) {
-            for (size_type j = 0; j < m; j++) {
+        }
+
+        matrix result(n, other.m);  // Result matrix dimensions: n x other.m
+
+        for (size_type i = 0; i < result.n; i++) {
+            for (size_type j = 0; j < result.m; j++) {
                 result.mat[i][j] = 0;
-                for (size_type k = 0; k < other.m; k++) {
-                    result.mat[i][j] += other.mat[i][k] * mat[k][j];
+                for (size_type k = 0; k < m; k++) {
+                    result.mat[i][j] += mat[i][k] * other.mat[k][j];
                 }
             }
         }
-
+        
         *this = result;
         return *this;
-    }   
+    }
 
 
     matrix &operator-=(const matrix &other) {
@@ -256,7 +260,7 @@ namespace ft
 
     ft::vector<T> operator*(const ft::vector<T> &v) {
         ft::vector<T> res;
-        if (m != v.size())
+        if (m != v.size() && (m != 4 && v.size() != 3))
             throw std::invalid_argument("matrix multiplication of " + std::to_string(n) + "x" + std::to_string(m) + " and " + std::to_string(v.size()) + "x1 vector");  
 
         for (size_type i = 0; i < n; i++)
@@ -306,6 +310,9 @@ namespace ft
             throw std::out_of_range("matrix");
         return mat[i];
     }
+
+    pointer data() {return mat.data();}
+    const pointer data() const {return mat.data();}
 
     size_type rows() const {return n;}
     size_type cols() const {return m;}
@@ -492,8 +499,8 @@ matrix row_echelon() {
     }
 
     friend matrix operator *(const matrix &lhs, const matrix &rhs) {
-        lhs.operator*(rhs);
         matrix tmp = lhs;
+        tmp *= rhs;
         return tmp;
     }
 
@@ -540,7 +547,6 @@ matrix row_echelon() {
 
     friend std::ostream &operator<<(std::ostream &os, matrix mat) {
         size_type width = 0;
-        auto it = mat.begin();
         for (auto it = mat.begin(); it != mat.end(); it++)
             width = std::max(sstr(*it).length(), width);
         for (size_type i = 0; i < mat.n; i++) {
@@ -601,10 +607,10 @@ matrix row_echelon() {
 
     };
 
-    matrix<float> rotate(vector<float> axis, float theta) {
+    matrix<float> rotate(float theta, vector<float> axis) {
         axis = axis / norm(axis);
         return matrix<float>({
-                {cosf(theta) + axis[0] * axis[0] * (1 - cosf(theta)), axis[0] * axis[1] * (1 - cosf(theta)) + axis[2] * sinf(theta), axis[0] * axis[2] * (1 - cosf(theta)) - axis[1] * sinf(theta), 0},
+               {cosf(theta) + axis[0] * axis[0] * (1 - cosf(theta)), axis[0] * axis[1] * (1 - cosf(theta)) + axis[2] * sinf(theta), axis[0] * axis[2] * (1 - cosf(theta)) - axis[1] * sinf(theta), 0},
                 {axis[1] * axis[0] * (1 - cosf(theta)) - axis[2] * sinf(theta), cosf(theta) + axis[1] * axis[1] * (1 - cosf(theta)), axis[1] * axis[2] * (1 - cosf(theta)) + axis[0] * sinf(theta), 0},
                 {axis[2] * axis[0] * (1 - cosf(theta)) + axis[1] * sinf(theta), axis[2] * axis[1] * (1 - cosf(theta)) - axis[0] * sinf(theta), cosf(theta) + axis[2] * axis[2] * (1 - cosf(theta)), 0},
                 {0, 0, 0, 1}
@@ -660,9 +666,22 @@ matrix row_echelon() {
         return matrix<float>({
             {x[0], x[1], x[2], 0},
             {y[0], y[1], y[2], 0},
-            {z[0], z[1], z[2], 0},
+            {z[0], z[1], z[2], 0}, 
             {0, 0, 0, 1}
-        }) * translation(-eye);
+        }) * translation(eye);
+    }
+
+
+
+    matrix<float> rotate(matrix<float> m, double theta, vector<float> axis) {
+        axis = axis / norm(axis);
+        return matrix<float>({
+               {cosf(theta) + axis[0] * axis[0] * (1 - cosf(theta)), axis[0] * axis[1] * (1 - cosf(theta)) + axis[2] * sinf(theta), axis[0] * axis[2] * (1 - cosf(theta)) - axis[1] * sinf(theta), 0},
+                {axis[1] * axis[0] * (1 - cosf(theta)) - axis[2] * sinf(theta), cosf(theta) + axis[1] * axis[1] * (1 - cosf(theta)), axis[1] * axis[2] * (1 - cosf(theta)) + axis[0] * sinf(theta), 0},
+                {axis[2] * axis[0] * (1 - cosf(theta)) + axis[1] * sinf(theta), axis[2] * axis[1] * (1 - cosf(theta)) - axis[0] * sinf(theta), cosf(theta) + axis[2] * axis[2] * (1 - cosf(theta)), 0},
+                {0, 0, 0, 1}
+            }) * m;
+
     }
 }
 #endif

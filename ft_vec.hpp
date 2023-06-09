@@ -4,10 +4,11 @@
 #include "utils.hpp"
 #include <memory>
 #include <algorithm>
-#include <iostream>
+#include <sstream>
 #include <cmath>
-// inlcude what i need to use initializer list
-#include <initializer_list>
+#include <bits/c++allocator.h>
+#include <iostream>
+
 namespace ft
 {
 	template < class T, typename Alloc = std::allocator<T> > 
@@ -26,6 +27,9 @@ namespace ft
         typedef	typename allocator_type::pointer            pointer;
         typedef typename allocator_type::const_pointer      const_pointer;
 
+
+	
+
     private:
         pointer arr;
         size_type _size;
@@ -33,10 +37,11 @@ namespace ft
        	size_type _capacity;
 
     public:
-        //member functions`
+        //member functions
         // vector():arr(NULL),_size(0), alloc(Alloc()), _capacity(0) {;}
         explicit vector(const Alloc& alloc = Alloc()):arr(NULL),_size(0), alloc(alloc), _capacity(0) {;}
-		explicit vector(std::initializer_list<T> init, const allocator_type& alloc = Alloc()):arr(NULL),_size(init.size()), alloc(alloc), _capacity(init.size()) {\
+		
+		vector(std::initializer_list<T> init, const allocator_type& alloc = Alloc()):arr(NULL),_size(init.size()), alloc(alloc), _capacity(init.size()) {
 			arr = this->alloc.allocate(init.size());
 			int i = 0;
 			for (auto it = init.begin(); it != init.end(); it++)
@@ -110,7 +115,7 @@ namespace ft
 				arr[i] /= val;
 			return (*this);
 		}
-		
+
 		friend T dot(const vector& a, const vector& b) {
 			if (a._size != b._size)
 				throw std::length_error("vector dot: vectors are not the same size");
@@ -118,6 +123,22 @@ namespace ft
 			for (size_type i = 0; i < a._size; i++)
 				res += a.arr[i] * b.arr[i];
 			return (res);
+		}
+
+		vector cross(const vector &other) {
+			if ((*this)._size != other._size)
+				throw std::length_error("vector cross: vectors (*this)re not the s(*this)me size");
+			if ((*this)._size != 3 && (*this)._size != 2)
+				throw std::length_error("vector cross: only vectors 2D and 3D vectors supported");
+			else if ((*this)._size == 2) {
+				return vector({(*this).arr[0] * other.arr[1] - (*this).arr[1] * other.arr[0]});
+			}
+			else if ((*this)._size == 3) {
+				return (vector({(*this).arr[1] * other.arr[2] - (*this).arr[2] * other.arr[1],
+							 	(*this).arr[2] * other.arr[0] - (*this).arr[0] * other.arr[2],
+								(*this).arr[0] * other.arr[1] - (*this).arr[1] * other.arr[0]}));
+			} 	
+			return 0;
 		}
 
 		friend vector cross(const vector& a, const vector& b) {
@@ -200,9 +221,8 @@ namespace ft
 
 		void reserve (size_type n)
 		{
-			if (n > alloc.max_size()){
-				std::cerr << n << "|" << alloc.max_size() << std::endl;
-				throw std::length_error("vector::reserve");}
+			if (n > alloc.max_size())
+				throw std::length_error("vector::reserve");
 			if (n > _capacity)
 			{
 				T * tmp = alloc.allocate(n + 1);
@@ -394,6 +414,7 @@ namespace ft
 				arr[i] = -arr[i];
 			return *this;
 		}
+
 		// friend vector operator -(const vector &rhs, const vector &lhs) {
 		// 	vector res;
 		// 	if (rhs.size() != lhs.size())
@@ -419,12 +440,17 @@ namespace ft
 		*this /= v;
 		return *this;
 		}
-		// friend vector operator *(const vector &rhs, const T &lhs) {
-		// 	vector res(rhs);
-		// 	res *= lhs;
-		// 	return res;
-		// }
 
+		friend vector operator *(const vector &rhs, const T &lhs) {
+			vector res(rhs);
+			res *= lhs;
+			return res;
+		}
+
+		vector &normalize() {
+			*this /= norm(*this);
+			return *this;
+		}
 
 		friend double norm(const vector& a) {
 			double res = 0;
@@ -475,7 +501,7 @@ namespace ft
 
 
 	template<class T>
-	ft::vector<T> linear_combination(ft::vector<ft::vector<T> > v, ft::vector<T> a)  {
+	ft::vector<T> linear_combination(ft::vector<ft::vector<T>> v, ft::vector<T> a)  {
 		ft::vector<T> res(v[0].size(), 0);
 		if (v.size() != a.size())
 			throw std::invalid_argument("vectors must be of same size");
